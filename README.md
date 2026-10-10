@@ -16,8 +16,6 @@ For example, when I read on my laptop in a noisy space, I may become very
 focused on one sentence and stop noticing other visual details around me. The
 other information is still there, but I do not give it the same attention.
 
-This made me ask: **What happens to everything else when we choose to focus?**
-
 ## My project
 
 The screen contains 240 letters, numbers, symbols, and dots. They move slowly
