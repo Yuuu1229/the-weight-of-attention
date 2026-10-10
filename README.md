@@ -12,10 +12,10 @@ of cognition.
 
 ## Observed phenomenon
 
-The field contains 240 persistent pieces of information: small alphanumeric
-characters, geometric dots, and minimal symbols. Attention never creates new
-marks or changes their identities. Instead, it redistributes visibility,
-stability, and spatial emphasis across the existing field.
+The field contains 240 persistent pieces of information: variable-scale
+alphanumeric characters, geometric dots, and minimal symbols. Attention never
+creates new marks or changes their identities. Instead, it redistributes
+visibility, stability, and spatial emphasis across the existing field.
 
 To focus on one thing is to let something else disappear.
 
@@ -30,9 +30,9 @@ a strength bounded to `[0, 1]`, and a conceptual state.
 
 The visual layer maps that effective output onto the fixed information field.
 Elements near the focus become clearer, converge only partway toward the
-attention center, and move more calmly. Peripheral marks fade toward a protected
-minimum opacity. A bounded displacement and maximum attraction ratio preserve
-spacing and prevent collapse into the cursor.
+attention center, grow subtly, rotate, and move more calmly. Peripheral marks
+fade toward a protected minimum opacity. Bounded radial and tangential
+displacements preserve a central opening and prevent collapse into the cursor.
 
 The response is deliberately staged. Searching first reveals nearby information
 without attraction or peripheral loss. During a stable dwell, local motion
@@ -57,14 +57,21 @@ focus releases and a new one forms.
 ## Visual response
 
 - Approximately 240 persistent elements: 60% characters, 30% dots, 10% symbols
-- Character sizes of approximately 12–18px; dots remain 1–2px
+- Character sizes of approximately 10–20px with 20% typographic accents at
+  28–48px; numerals receive a further 1.15 scale factor
+- Dots remain subordinate at approximately 2–4px
+- Mixed system serif, display, italic, and monospace typography with stable
+  per-element rotation
+- A responsive radial composition with a protected central opening, dense
+  typographic core, and quieter periphery
 - Background `#08090B` and marks `#E8E8E3`
 - Slow unsynchronized ambient movement
-- Focus radius of approximately 200px
+- Focus radius of approximately 260px
 - Maximum attraction ratio of `0.45`
 - Maximum convergence displacement of 28px
+- Maximum tangential displacement of 18px
 - Minimum peripheral opacity of `0.10`
-- No rings, spirals, glow, trails, sound, or cursor decoration
+- No glow, trails, sound, or cursor decoration
 
 Reduced-motion mode freezes ambient and convergence movement while retaining
 the clarity-based attention response.

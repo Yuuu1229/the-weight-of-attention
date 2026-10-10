@@ -12,26 +12,41 @@
       symbols: 24,
     }),
     vocabulary: Object.freeze({
-      characters: Object.freeze(["a", "e", "n", "x", "0", "1", "7"]),
-      symbols: Object.freeze(["+", "·", "–"]),
+      characters: Object.freeze([
+        "a", "b", "e", "g", "h", "m", "n", "r", "s", "x",
+        "A", "D", "H", "K", "M", "R", "W", "0", "1", "2", "7", "9",
+      ]),
+      symbols: Object.freeze(["+", "·", "–", "/", "(", ")"]),
     }),
     sizing: Object.freeze({
-      characterMin: 12,
-      characterMax: 18,
-      symbolMin: 10,
-      symbolMax: 16,
-      dotDiameterMin: 1,
-      dotDiameterMax: 2,
+      characterMin: 10,
+      characterMax: 20,
+      characterAccentMin: 28,
+      characterAccentMax: 48,
+      symbolMin: 9,
+      symbolMax: 18,
+      symbolAccentMin: 22,
+      symbolAccentMax: 38,
+      accentProbability: 0.2,
+      numericScale: 1.15,
+      dotDiameterMin: 2,
+      dotDiameterMax: 4,
     }),
     composition: Object.freeze({
-      edgeMargin: 22,
-      placementAttempts: 18,
-      minimumSpacingMin: 14,
-      minimumSpacingMax: 30,
+      edgeMargin: 28,
+      placementAttempts: 24,
+      minimumSpacingMin: 6,
+      minimumSpacingMax: 16,
+      coreProbability: 0.84,
+      coreRadiusMin: 0.14,
+      coreRadiusMax: 0.4,
+      peripheralRadiusMin: 0.4,
+      peripheralRadiusMax: 0.8,
+      horizontalRadiusScale: 1.2,
     }),
     appearance: Object.freeze({
-      opacityMin: 0.22,
-      opacityMax: 0.52,
+      opacityMin: 0.28,
+      opacityMax: 0.72,
     }),
     movement: Object.freeze({
       amplitudeMin: 2.5,
@@ -45,8 +60,13 @@
     rendering: Object.freeze({
       maximumPixelRatio: 2,
       maximumFrameDelta: 0.05,
-      fontFamily:
-        '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+      fontFamilies: Object.freeze([
+        'Didot, "Bodoni 72", "Times New Roman", serif',
+        '"Iowan Old Style", Palatino, Georgia, serif',
+        'Georgia, "Times New Roman", serif',
+        '"Snell Roundhand", "Apple Chancery", cursive',
+        '"SFMono-Regular", Consolas, Menlo, monospace',
+      ]),
     }),
     attention: Object.freeze({
       focusBuildTime: 1.5,
@@ -55,7 +75,7 @@
       stableSpeedThreshold: 12,
       fastSpeedThreshold: 80,
       dwellTolerance: 20,
-      focusRadius: 200,
+      focusRadius: 260,
       maximumEffectiveFocusCount: 1,
       velocityResponseTime: 0.12,
       maximumAttentionFrameGap: 0.25,
@@ -68,7 +88,7 @@
     response: Object.freeze({
       maximumAttractionRatio: 0.45,
       maximumConvergenceDisplacement: 28,
-      focusedOpacity: 0.94,
+      focusedOpacity: 0.98,
       peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
       focusedMotionReduction: 0.9,
@@ -77,6 +97,15 @@
       calmCompletionStrength: 0.7,
       convergenceStartStrength: 0.18,
       peripheralFadeStartStrength: 0.4,
+      positionSmoothingTime: 0.09,
+      opacitySmoothingTime: 0.12,
+      positionSettleEpsilon: 0.02,
+      opacitySettleEpsilon: 0.001,
+      transformSmoothingTime: 0.12,
+      transformSettleEpsilon: 0.001,
+      maximumTangentialDisplacement: 18,
+      maximumFocusedScaleIncrease: 0.48,
+      minimumFocusOrbitRadius: 76,
     }),
   });
 
@@ -99,6 +128,7 @@
     isDocumentVisible: !document.hidden,
     prefersReducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)"),
     attention: createAttentionState(),
+    visualsSettling: false,
   };
 
   function createCandidateState() {
@@ -663,7 +693,7 @@
       (CONFIG.population.characters +
         CONFIG.population.dots +
         CONFIG.population.symbols);
-    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.36;
+    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.22;
 
     return Math.min(
       CONFIG.composition.minimumSpacingMax,
@@ -671,11 +701,43 @@
     );
   }
 
+  function createCompositionCandidate(marginX, marginY) {
+    const centerX = state.width * 0.5;
+    const centerY = state.height * 0.52;
+    const referenceSize = Math.min(state.width, state.height);
+    const isCore = Math.random() < CONFIG.composition.coreProbability;
+    const radius =
+      referenceSize *
+      randomBetween(
+        isCore
+          ? CONFIG.composition.coreRadiusMin
+          : CONFIG.composition.peripheralRadiusMin,
+        isCore
+          ? CONFIG.composition.coreRadiusMax
+          : CONFIG.composition.peripheralRadiusMax,
+      );
+    const angle = Math.random() * Math.PI * 2;
+
+    return {
+      x: clamp(
+        centerX +
+          Math.cos(angle) *
+            radius *
+            CONFIG.composition.horizontalRadiusScale,
+        marginX,
+        state.width - marginX,
+      ),
+      y: clamp(
+        centerY + Math.sin(angle) * radius,
+        marginY,
+        state.height - marginY,
+      ),
+    };
+  }
+
   function choosePosition(existingElements) {
     const marginX = Math.min(CONFIG.composition.edgeMargin, state.width * 0.08);
     const marginY = Math.min(CONFIG.composition.edgeMargin, state.height * 0.08);
-    const availableWidth = Math.max(1, state.width - marginX * 2);
-    const availableHeight = Math.max(1, state.height - marginY * 2);
     const minimumSpacing = getMinimumSpacing();
     let bestCandidate = null;
     let bestDistance = -1;
@@ -686,10 +748,7 @@
       attempt < CONFIG.composition.placementAttempts;
       attempt += 1
     ) {
-      const candidate = {
-        x: marginX + Math.random() * availableWidth,
-        y: marginY + Math.random() * availableHeight,
-      };
+      const candidate = createCompositionCandidate(marginX, marginY);
       let nearestDistance = Number.POSITIVE_INFINITY;
 
       for (const element of existingElements) {
@@ -718,40 +777,70 @@
     const position = choosePosition(existingElements);
     const isDot = type === "dot";
     const isSymbol = type === "symbol";
-    const size = isDot
-      ? randomBetween(
-          CONFIG.sizing.dotDiameterMin,
-          CONFIG.sizing.dotDiameterMax,
-        )
-      : randomBetween(
+    const content = isDot
+      ? null
+      : randomItem(
           isSymbol
-            ? CONFIG.sizing.symbolMin
-            : CONFIG.sizing.characterMin,
-          isSymbol
-            ? CONFIG.sizing.symbolMax
-            : CONFIG.sizing.characterMax,
+            ? CONFIG.vocabulary.symbols
+            : CONFIG.vocabulary.characters,
         );
+    const isAccent = !isDot && Math.random() < CONFIG.sizing.accentProbability;
+    let size;
+
+    if (isDot) {
+      size = randomBetween(
+        CONFIG.sizing.dotDiameterMin,
+        CONFIG.sizing.dotDiameterMax,
+      );
+    } else if (isSymbol) {
+      size = randomBetween(
+        isAccent ? CONFIG.sizing.symbolAccentMin : CONFIG.sizing.symbolMin,
+        isAccent ? CONFIG.sizing.symbolAccentMax : CONFIG.sizing.symbolMax,
+      );
+    } else {
+      size = randomBetween(
+        isAccent
+          ? CONFIG.sizing.characterAccentMin
+          : CONFIG.sizing.characterMin,
+        isAccent
+          ? CONFIG.sizing.characterAccentMax
+          : CONFIG.sizing.characterMax,
+      );
+
+      if (/^\d$/.test(content)) {
+        size *= CONFIG.sizing.numericScale;
+      }
+    }
+
+    const fontFamily = isDot
+      ? null
+      : randomItem(CONFIG.rendering.fontFamilies);
+    const fontStyle = !isDot && Math.random() < 0.3 ? "italic" : "normal";
+    const fontWeight = !isDot && isAccent ? 500 : 400;
 
     return {
       id,
       type,
-      content: isDot
-        ? null
-        : randomItem(
-            isSymbol
-              ? CONFIG.vocabulary.symbols
-              : CONFIG.vocabulary.characters,
-          ),
+      content,
       normalizedX: position.x / state.width,
       normalizedY: position.y / state.height,
       size,
       font: isDot
         ? null
-        : `${size.toFixed(2)}px ${CONFIG.rendering.fontFamily}`,
+        : `${fontStyle} ${fontWeight} ${size.toFixed(2)}px ${fontFamily}`,
       opacity: randomBetween(
         CONFIG.appearance.opacityMin,
         CONFIG.appearance.opacityMax,
       ),
+      renderX: null,
+      renderY: null,
+      renderOpacity: null,
+      renderScale: null,
+      renderRotation: null,
+      rotation: randomBetween(-0.58, 0.58),
+      focusRotation: randomBetween(-0.42, 0.42),
+      focusScale: randomBetween(0.45, 1),
+      orbitBias: randomBetween(-1, 1),
       amplitudeX: randomBetween(
         CONFIG.movement.amplitudeMin,
         CONFIG.movement.amplitudeMax,
@@ -834,6 +923,11 @@
       boundary,
       state.height - boundary,
     );
+    const ambientRotation =
+      element.rotation +
+      Math.sin(elapsed * element.frequencyX * 0.7 + element.phaseY) *
+        0.035 *
+        motionRatio;
     const effective = state.attention.effective;
     const hasFocus =
       effective.owner !== "none" &&
@@ -842,7 +936,13 @@
       effective.strength > CONFIG.attention.strengthEpsilon;
 
     if (!hasFocus) {
-      return { x: uncalmedX, y: uncalmedY, opacity: element.opacity };
+      return {
+        x: uncalmedX,
+        y: uncalmedY,
+        opacity: element.opacity,
+        scale: 1,
+        rotation: ambientRotation,
+      };
     }
 
     const focusStrength = clamp(effective.strength, 0, 1);
@@ -901,6 +1001,14 @@
     const spatialRatio = state.prefersReducedMotion.matches
       ? 0
       : displacementRatio;
+    const tangentX = focusDistance > 0 ? -focusDeltaY / focusDistance : 0;
+    const tangentY = focusDistance > 0 ? focusDeltaX / focusDistance : 0;
+    const tangentialDisplacement = state.prefersReducedMotion.matches
+      ? 0
+      : CONFIG.response.maximumTangentialDisplacement *
+        localInfluence *
+        convergenceStrength *
+        element.orbitBias;
     const clarifiedOpacity =
       element.opacity +
       (CONFIG.response.focusedOpacity - element.opacity) *
@@ -911,53 +1019,148 @@
       CONFIG.response.peripheralFadeAmount *
         peripheralStrength *
         (1 - localInfluence);
+    let visualX =
+      ambientX +
+      focusDeltaX * spatialRatio +
+      tangentX * tangentialDisplacement;
+    let visualY =
+      ambientY +
+      focusDeltaY * spatialRatio +
+      tangentY * tangentialDisplacement;
+
+    if (!state.prefersReducedMotion.matches) {
+      const orbitRadius =
+        CONFIG.response.minimumFocusOrbitRadius * convergenceStrength;
+      const orbitDeltaX = visualX - effective.x;
+      const orbitDeltaY = visualY - effective.y;
+      const orbitDistance = Math.hypot(orbitDeltaX, orbitDeltaY);
+
+      if (orbitDistance < orbitRadius) {
+        const orbitAngle =
+          orbitDistance > 0
+            ? Math.atan2(orbitDeltaY, orbitDeltaX)
+            : element.phaseX;
+        visualX = effective.x + Math.cos(orbitAngle) * orbitRadius;
+        visualY = effective.y + Math.sin(orbitAngle) * orbitRadius;
+      }
+    }
 
     return {
-      x: clamp(
-        ambientX + focusDeltaX * spatialRatio,
-        boundary,
-        state.width - boundary,
-      ),
-      y: clamp(
-        ambientY + focusDeltaY * spatialRatio,
-        boundary,
-        state.height - boundary,
-      ),
+      x: clamp(visualX, boundary, state.width - boundary),
+      y: clamp(visualY, boundary, state.height - boundary),
       opacity: clamp(
         clarifiedOpacity * peripheralFactor,
         CONFIG.response.minimumPeripheralOpacity,
         CONFIG.response.focusedOpacity,
       ),
+      scale: state.prefersReducedMotion.matches
+        ? 1
+        : 1 +
+          CONFIG.response.maximumFocusedScaleIncrease *
+            element.focusScale *
+            localInfluence *
+            clarityStrength,
+      rotation: state.prefersReducedMotion.matches
+        ? element.rotation
+        : ambientRotation +
+          element.focusRotation * localInfluence * convergenceStrength,
     };
   }
 
-  function drawTextElement(element, x, y) {
+  function drawTextElement(element, x, y, scale, rotation) {
+    context.save();
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.scale(scale, scale);
     context.font = element.font;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(element.content, x, y);
+    context.fillText(element.content, 0, 0);
+    context.restore();
   }
 
-  function drawDot(element, x, y) {
+  function drawDot(element, x, y, scale) {
     context.beginPath();
-    context.arc(x, y, element.size / 2, 0, Math.PI * 2);
+    context.arc(x, y, (element.size * scale) / 2, 0, Math.PI * 2);
     context.fill();
   }
 
-  function render() {
+  function render(delta = 0) {
     context.globalAlpha = 1;
     context.fillStyle = CONFIG.colors.background;
     context.fillRect(0, 0, state.width, state.height);
     context.fillStyle = CONFIG.colors.mark;
+    state.visualsSettling = false;
+
+    const positionResponse =
+      delta > 0
+        ? 1 - Math.exp(-delta / CONFIG.response.positionSmoothingTime)
+        : 1;
+    const opacityResponse =
+      delta > 0
+        ? 1 - Math.exp(-delta / CONFIG.response.opacitySmoothingTime)
+        : 1;
+    const transformResponse =
+      delta > 0
+        ? 1 - Math.exp(-delta / CONFIG.response.transformSmoothingTime)
+        : 1;
 
     for (const element of state.elements) {
-      const visual = getElementVisualState(element, state.elapsed);
-      context.globalAlpha = visual.opacity;
+      const target = getElementVisualState(element, state.elapsed);
+
+      if (
+        element.renderX === null ||
+        element.renderY === null ||
+        element.renderOpacity === null ||
+        element.renderScale === null ||
+        element.renderRotation === null
+      ) {
+        element.renderX = target.x;
+        element.renderY = target.y;
+        element.renderOpacity = target.opacity;
+        element.renderScale = target.scale;
+        element.renderRotation = target.rotation;
+      } else {
+        element.renderX += (target.x - element.renderX) * positionResponse;
+        element.renderY += (target.y - element.renderY) * positionResponse;
+        element.renderOpacity +=
+          (target.opacity - element.renderOpacity) * opacityResponse;
+        element.renderScale +=
+          (target.scale - element.renderScale) * transformResponse;
+        const rotationDelta = Math.atan2(
+          Math.sin(target.rotation - element.renderRotation),
+          Math.cos(target.rotation - element.renderRotation),
+        );
+        element.renderRotation += rotationDelta * transformResponse;
+      }
+
+      if (
+        Math.abs(target.x - element.renderX) >
+          CONFIG.response.positionSettleEpsilon ||
+        Math.abs(target.y - element.renderY) >
+          CONFIG.response.positionSettleEpsilon ||
+        Math.abs(target.opacity - element.renderOpacity) >
+          CONFIG.response.opacitySettleEpsilon ||
+        Math.abs(target.scale - element.renderScale) >
+          CONFIG.response.transformSettleEpsilon ||
+        Math.abs(target.rotation - element.renderRotation) >
+          CONFIG.response.transformSettleEpsilon
+      ) {
+        state.visualsSettling = true;
+      }
+
+      context.globalAlpha = element.renderOpacity;
 
       if (element.type === "dot") {
-        drawDot(element, visual.x, visual.y);
+        drawDot(element, element.renderX, element.renderY, element.renderScale);
       } else {
-        drawTextElement(element, visual.x, visual.y);
+        drawTextElement(
+          element,
+          element.renderX,
+          element.renderY,
+          element.renderScale,
+          element.renderRotation,
+        );
       }
     }
 
@@ -993,11 +1196,12 @@
     if (!state.prefersReducedMotion.matches) {
       state.elapsed += visualDelta;
     }
-    render();
+    render(visualDelta);
 
     if (
       !state.prefersReducedMotion.matches ||
-      attentionNeedsAnimation(state.attention)
+      attentionNeedsAnimation(state.attention) ||
+      state.visualsSettling
     ) {
       state.animationFrame = window.requestAnimationFrame(animate);
     } else {
@@ -1016,7 +1220,8 @@
 
     if (
       state.prefersReducedMotion.matches &&
-      !attentionNeedsAnimation(state.attention)
+      !attentionNeedsAnimation(state.attention) &&
+      !state.visualsSettling
     ) {
       render();
       return;
@@ -1090,6 +1295,15 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+    for (const element of state.elements) {
+      element.renderX = null;
+      element.renderY = null;
+      element.renderOpacity = null;
+      element.renderScale = null;
+      element.renderRotation = null;
+    }
+
     render();
   }
 
