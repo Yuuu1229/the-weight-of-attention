@@ -4,23 +4,23 @@
 
 **GitHub:** https://github.com/Yuuu1229/the-weight-of-attention
 
-The Weight of Attention is an interactive artwork about selective attention.
-It was made with HTML, CSS, JavaScript, and Canvas 2D.
+The Weight of Attention is an interactive generative art project about
+selective attention. It was made with HTML, CSS, JavaScript, and Canvas 2D.
 
 ## What I observed
 
 I chose attention as the phenomenon. In daily life, when I focus on one thing,
 that thing becomes clearer, but other things around it feel less important.
 
-For example, when I read on my laptop in a noisy space, I may become very
-focused on one sentence and stop noticing other visual details around me. The
-other information is still there, but I do not give it the same attention.
+For example, when I read on my laptop in a noisy space, I may focus on one
+sentence and stop noticing other visual details around me. The other
+information is still there, but I do not give it the same attention.
 
 ## My project
 
-The screen contains 240 letters, numbers, symbols, and dots. They move slowly
-on a dark background and represent information around us. The mouse represents
-the viewer's attention.
+The Weight of Attention is an interactive artwork. The screen has 240 letters,
+numbers, symbols, and dots. They move slowly on a dark background and represent
+information around us. The mouse represents the viewer's attention.
 
 When the mouse moves, nearby marks respond a little. When the mouse stays in
 one area, focus builds for about 1.5 seconds. Nearby marks become clearer,
@@ -31,7 +31,8 @@ The marks do not collapse into the mouse. They move only part of the way, so
 the effect stays soft. The closest character becomes the largest and clearest
 piece of information.
 
-My main idea is: **To focus on one thing is to let something else disappear.**
+My main idea is that focusing on one thing also means letting something else
+disappear from our attention.
 
 This is an artistic model, not a scientific model of the brain.
 
@@ -40,9 +41,9 @@ This is an artistic model, not a scientific model of the brain.
 I broke attention into smaller parts: mouse position, mouse speed, time in one
 area, distance from the mouse, focus strength, movement, size, and opacity.
 
-I noticed a simple pattern. Fast movement feels like searching. Staying in one
-place feels like focusing. A focus should grow slowly, and it should also leave
-slowly when attention moves somewhere else.
+I noticed a pattern. Fast movement feels like searching. Staying in one place
+feels like focusing. Focus should grow slowly, and it should also leave slowly
+when attention moves somewhere else.
 
 I simplified the idea into one attention point, one focus value from 0 to 1,
 and a field of information. The program repeats these steps:
@@ -94,7 +95,7 @@ Computational thinking helped me turn an invisible idea into small rules. The
 most useful rule was not "make particles follow the mouse." It was "make one
 area easier to read while other areas lose importance."
 
-I also learned the difference between copying a visual style and copying a
+I learned the difference between copying a visual style and copying a
 composition. The reference image helped with typography, rotation, size
 contrast, and the black-and-white mood. Its circle shape did not fit my idea.
 
@@ -102,6 +103,10 @@ Testing was important. The code alone did not show me that the letters were too
 small, the movement felt rough, the focus looked like a ring, or the main
 character could be hidden. Each visual problem became a smaller coding problem
 that I could change and test again.
+
+The main interaction is made for a desktop mouse. If I continue the project, I
+would test more screen sizes and add touch interaction without losing the slow
+feeling.
 
 ## Code and how to run it
 
