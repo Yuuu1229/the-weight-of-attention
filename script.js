@@ -82,7 +82,7 @@
     response: Object.freeze({
       maximumAttractionRatio: 0.62,
       maximumConvergenceDisplacement: 44,
-      focusedOpacity: 0.98,
+      focusedOpacity: 0.9,
       peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
       focusedMotionReduction: 0.9,
@@ -105,9 +105,9 @@
       focusHeroSwitchHysteresis: 18,
       focusHeroBuildStartStrength: 0.18,
       focusHeroBuildEndStrength: 0.9,
-      focusHeroTargetSize: 72,
-      focusHeroMinimumScale: 1.55,
-      focusHeroMaximumScale: 5.2,
+      focusHeroTargetSize: 88,
+      focusHeroMinimumScale: 1.85,
+      focusHeroMaximumScale: 7.5,
       focusHeroOpacity: 1,
     }),
   });
