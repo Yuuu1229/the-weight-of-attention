@@ -30,9 +30,9 @@ a strength bounded to `[0, 1]`, and a conceptual state.
 
 The visual layer maps that effective output onto the fixed information field.
 Elements near the focus become clearer, converge only partway toward the
-attention center, grow subtly, rotate, and move more calmly. Peripheral marks
-fade toward a protected minimum opacity. Bounded radial and tangential
-displacements preserve a central opening and prevent collapse into the cursor.
+attention center, grow subtly, and move more calmly. Peripheral marks fade
+toward a protected minimum opacity. A bounded direct displacement preserves
+spacing and prevents collapse into the cursor.
 
 The response is deliberately staged. Searching first reveals nearby information
 without attraction or peripheral loss. During a stable dwell, local motion
@@ -62,16 +62,15 @@ focus releases and a new one forms.
 - Dots remain subordinate at approximately 2–4px
 - Mixed system serif, display, italic, and monospace typography with stable
   per-element rotation
-- A responsive radial composition with a protected central opening, dense
-  typographic core, and quieter periphery
+- A dispersed field with no fixed center; local density forms only around the
+  active mouse focus
 - Background `#08090B` and marks `#E8E8E3`
 - Slow unsynchronized ambient movement
 - Focus radius of approximately 260px
 - Maximum attraction ratio of `0.45`
-- Maximum convergence displacement of 28px
-- Maximum tangential displacement of 18px
+- Maximum convergence displacement of 36px
 - Minimum peripheral opacity of `0.10`
-- No glow, trails, sound, or cursor decoration
+- No rings, spirals, fixed center, glow, trails, sound, or cursor decoration
 
 Reduced-motion mode freezes ambient and convergence movement while retaining
 the clarity-based attention response.

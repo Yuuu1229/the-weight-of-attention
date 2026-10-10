@@ -35,14 +35,8 @@
     composition: Object.freeze({
       edgeMargin: 28,
       placementAttempts: 24,
-      minimumSpacingMin: 6,
-      minimumSpacingMax: 16,
-      coreProbability: 0.84,
-      coreRadiusMin: 0.14,
-      coreRadiusMax: 0.4,
-      peripheralRadiusMin: 0.4,
-      peripheralRadiusMax: 0.8,
-      horizontalRadiusScale: 1.2,
+      minimumSpacingMin: 10,
+      minimumSpacingMax: 24,
     }),
     appearance: Object.freeze({
       opacityMin: 0.28,
@@ -87,7 +81,7 @@
     }),
     response: Object.freeze({
       maximumAttractionRatio: 0.45,
-      maximumConvergenceDisplacement: 28,
+      maximumConvergenceDisplacement: 36,
       focusedOpacity: 0.98,
       peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
@@ -103,9 +97,7 @@
       opacitySettleEpsilon: 0.001,
       transformSmoothingTime: 0.12,
       transformSettleEpsilon: 0.001,
-      maximumTangentialDisplacement: 18,
       maximumFocusedScaleIncrease: 0.48,
-      minimumFocusOrbitRadius: 76,
     }),
   });
 
@@ -693,7 +685,7 @@
       (CONFIG.population.characters +
         CONFIG.population.dots +
         CONFIG.population.symbols);
-    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.22;
+    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.3;
 
     return Math.min(
       CONFIG.composition.minimumSpacingMax,
@@ -701,43 +693,11 @@
     );
   }
 
-  function createCompositionCandidate(marginX, marginY) {
-    const centerX = state.width * 0.5;
-    const centerY = state.height * 0.52;
-    const referenceSize = Math.min(state.width, state.height);
-    const isCore = Math.random() < CONFIG.composition.coreProbability;
-    const radius =
-      referenceSize *
-      randomBetween(
-        isCore
-          ? CONFIG.composition.coreRadiusMin
-          : CONFIG.composition.peripheralRadiusMin,
-        isCore
-          ? CONFIG.composition.coreRadiusMax
-          : CONFIG.composition.peripheralRadiusMax,
-      );
-    const angle = Math.random() * Math.PI * 2;
-
-    return {
-      x: clamp(
-        centerX +
-          Math.cos(angle) *
-            radius *
-            CONFIG.composition.horizontalRadiusScale,
-        marginX,
-        state.width - marginX,
-      ),
-      y: clamp(
-        centerY + Math.sin(angle) * radius,
-        marginY,
-        state.height - marginY,
-      ),
-    };
-  }
-
   function choosePosition(existingElements) {
     const marginX = Math.min(CONFIG.composition.edgeMargin, state.width * 0.08);
     const marginY = Math.min(CONFIG.composition.edgeMargin, state.height * 0.08);
+    const availableWidth = Math.max(1, state.width - marginX * 2);
+    const availableHeight = Math.max(1, state.height - marginY * 2);
     const minimumSpacing = getMinimumSpacing();
     let bestCandidate = null;
     let bestDistance = -1;
@@ -748,7 +708,10 @@
       attempt < CONFIG.composition.placementAttempts;
       attempt += 1
     ) {
-      const candidate = createCompositionCandidate(marginX, marginY);
+      const candidate = {
+        x: marginX + Math.random() * availableWidth,
+        y: marginY + Math.random() * availableHeight,
+      };
       let nearestDistance = Number.POSITIVE_INFINITY;
 
       for (const element of existingElements) {
@@ -838,9 +801,7 @@
       renderScale: null,
       renderRotation: null,
       rotation: randomBetween(-0.58, 0.58),
-      focusRotation: randomBetween(-0.42, 0.42),
       focusScale: randomBetween(0.45, 1),
-      orbitBias: randomBetween(-1, 1),
       amplitudeX: randomBetween(
         CONFIG.movement.amplitudeMin,
         CONFIG.movement.amplitudeMax,
@@ -1001,14 +962,6 @@
     const spatialRatio = state.prefersReducedMotion.matches
       ? 0
       : displacementRatio;
-    const tangentX = focusDistance > 0 ? -focusDeltaY / focusDistance : 0;
-    const tangentY = focusDistance > 0 ? focusDeltaX / focusDistance : 0;
-    const tangentialDisplacement = state.prefersReducedMotion.matches
-      ? 0
-      : CONFIG.response.maximumTangentialDisplacement *
-        localInfluence *
-        convergenceStrength *
-        element.orbitBias;
     const clarifiedOpacity =
       element.opacity +
       (CONFIG.response.focusedOpacity - element.opacity) *
@@ -1019,31 +972,8 @@
       CONFIG.response.peripheralFadeAmount *
         peripheralStrength *
         (1 - localInfluence);
-    let visualX =
-      ambientX +
-      focusDeltaX * spatialRatio +
-      tangentX * tangentialDisplacement;
-    let visualY =
-      ambientY +
-      focusDeltaY * spatialRatio +
-      tangentY * tangentialDisplacement;
-
-    if (!state.prefersReducedMotion.matches) {
-      const orbitRadius =
-        CONFIG.response.minimumFocusOrbitRadius * convergenceStrength;
-      const orbitDeltaX = visualX - effective.x;
-      const orbitDeltaY = visualY - effective.y;
-      const orbitDistance = Math.hypot(orbitDeltaX, orbitDeltaY);
-
-      if (orbitDistance < orbitRadius) {
-        const orbitAngle =
-          orbitDistance > 0
-            ? Math.atan2(orbitDeltaY, orbitDeltaX)
-            : element.phaseX;
-        visualX = effective.x + Math.cos(orbitAngle) * orbitRadius;
-        visualY = effective.y + Math.sin(orbitAngle) * orbitRadius;
-      }
-    }
+    const visualX = ambientX + focusDeltaX * spatialRatio;
+    const visualY = ambientY + focusDeltaY * spatialRatio;
 
     return {
       x: clamp(visualX, boundary, state.width - boundary),
@@ -1062,8 +992,7 @@
             clarityStrength,
       rotation: state.prefersReducedMotion.matches
         ? element.rotation
-        : ambientRotation +
-          element.focusRotation * localInfluence * convergenceStrength,
+        : ambientRotation,
     };
   }
 
