@@ -16,10 +16,10 @@
       symbols: Object.freeze(["+", "·", "–"]),
     }),
     sizing: Object.freeze({
-      characterMin: 7,
-      characterMax: 11,
-      symbolMin: 6.5,
-      symbolMax: 10.5,
+      characterMin: 8.5,
+      characterMax: 13,
+      symbolMin: 8,
+      symbolMax: 12,
       dotDiameterMin: 1,
       dotDiameterMax: 2,
     }),
@@ -60,7 +60,8 @@
       velocityResponseTime: 0.12,
       maximumAttentionFrameGap: 0.25,
       ownershipHysteresis: 0.05,
-      handoffDuration: 0.25,
+      handoffDuration: 0.35,
+      focusPositionResponseTime: 0.1,
       strengthEpsilon: 0.0001,
       minimumSampleInterval: 0.001,
     }),
@@ -556,8 +557,12 @@
     }
 
     if (!effective.transition) {
-      effective.x = target.x;
-      effective.y = target.y;
+      const positionResponse =
+        delta > 0
+          ? 1 - Math.exp(-delta / CONFIG.attention.focusPositionResponseTime)
+          : 1;
+      effective.x += (target.x - effective.x) * positionResponse;
+      effective.y += (target.y - effective.y) * positionResponse;
       effective.strength = clamp(target.strength, 0, 1);
       return;
     }
