@@ -2,134 +2,116 @@
 
 **Live website:** https://yuuu1229.github.io/the-weight-of-attention/
 
-**Main idea:** Attention does not create information. It changes what becomes
-visible.
+**GitHub:** https://github.com/Yuuu1229/the-weight-of-attention
 
 The Weight of Attention is an interactive artwork about selective attention.
-When the mouse stays in one place, nearby information becomes larger, clearer,
-and calmer. Information farther away becomes darker. When the mouse moves away,
-the old focus slowly disappears and the full field returns.
+It was made with HTML, CSS, JavaScript, and Canvas 2D.
 
-## The phenomenon
+## What I observed
 
-The phenomenon I chose is selective attention. People cannot give equal
-attention to everything at the same time. When one area becomes important,
-other information can feel less visible.
+I chose attention as the phenomenon. In daily life, when I focus on one thing,
+that thing becomes clearer, but other things around it feel less important.
 
-The artwork uses 240 letters, numbers, dots, and symbols to show this idea. The
-marks always keep the same identity. Attention does not add new information. It
-only changes what the viewer can see clearly.
+For example, when I read on my laptop in a noisy space, I may become very
+focused on one sentence and stop noticing other visual details around me. The
+other information is still there, but I do not give it the same attention.
+
+This made me ask: **What happens to everything else when we choose to focus?**
+
+## My project
+
+The screen contains 240 letters, numbers, symbols, and dots. They move slowly
+on a dark background and represent information around us. The mouse represents
+the viewer's attention.
+
+When the mouse moves, nearby marks respond a little. When the mouse stays in
+one area, focus builds for about 1.5 seconds. Nearby marks become clearer,
+larger, closer, and calmer. Marks farther away become darker. When the mouse
+moves away, the old focus fades for about 2 seconds.
+
+The marks do not collapse into the mouse. They move only part of the way, so
+the effect stays soft. The closest character becomes the largest and clearest
+piece of information.
+
+My main idea is: **To focus on one thing is to let something else disappear.**
+
+This is an artistic model, not a scientific model of the brain.
 
 ## Computational thinking
 
-I broke the idea into four parts:
+I broke attention into smaller parts: mouse position, mouse speed, time in one
+area, distance from the mouse, focus strength, movement, size, and opacity.
 
-1. **Information:** a field of fixed letters, numbers, dots, and symbols.
-2. **Attention:** the mouse position, mouse speed, and time spent in one area.
-3. **Focus:** nearby marks become clearer, larger, closer, and calmer.
-4. **Release:** the focus fades when the mouse moves away.
+I noticed a simple pattern. Fast movement feels like searching. Staying in one
+place feels like focusing. A focus should grow slowly, and it should also leave
+slowly when attention moves somewhere else.
 
-I found these patterns:
+I simplified the idea into one attention point, one focus value from 0 to 1,
+and a field of information. The program repeats these steps:
 
-- Fast mouse movement means the viewer is still searching.
-- A slow or still mouse means the viewer may be focusing.
-- Focus needs time to grow.
-- A new focus should replace the old one smoothly.
-- Making one area clearer should make the rest of the field quieter.
+1. Read the mouse position and speed.
+2. Check how long the mouse stays in one area.
+3. Increase or decrease the focus value.
+4. Make nearby information clearer and slightly closer.
+5. Make the closest character the clearest mark.
+6. Make distant information quieter.
+7. Return the field slowly when focus ends.
 
-I removed details that were not needed. This is not a scientific model of the
-brain. It is a visual model with one attention point, one focus strength, and a
-field of information.
-
-### Simple algorithm
-
-```text
-Create 240 marks and keep their identities.
-
-For every animation frame:
-  Read the mouse position and speed.
-  If the mouse is moving fast, show a weak local response.
-  If the mouse stays in one area, build focus for 1.5 seconds.
-  Find the closest character to the mouse.
-  Make that character the largest and clearest mark.
-  Move nearby marks partway toward the mouse.
-  Make nearby motion calmer.
-  Make distant marks darker.
-  If the mouse leaves, release the focus for about 2 seconds.
-```
-
-## Design choices
-
-- Black background: `#08090B`
-- Warm white marks: `#E8E8E3`
-- 60% letters and numbers, 30% dots, and 10% symbols
-- Mixed serif, script, and monospace type
-- Slow movement and large empty spaces
-- No color, glow, sound, mouse trail, spiral, or fixed center
-
-The design is quiet when the viewer is not interacting. The mouse does not pull
-everything into one point. Nearby marks only move partway. The closest character
-grows to about 88px, becomes fully visible, turns upright, and is drawn above the
-other marks. This makes the mouse position the clearest piece of information.
-
-## Interaction
-
-- **Ambient:** The field moves slowly with no focus.
-- **Searching:** Moving the mouse creates a small local response.
-- **Focusing:** Staying near one point for about 1.5 seconds builds a strong
-  focus.
-- **Release:** Moving away makes the old focus fade over about 2 seconds.
+These small rules create a more complex visual result.
 
 ## How I used AI
 
-I used AI as a coding partner, but I made the final design decisions.
+I used ChatGPT as a thinking partner and Codex to help with development. At the
+beginning, I compared ideas about hesitation, communication, memory, and
+attention. I chose selective attention because it could become a clear visual
+system without very complicated code.
 
-At first, I asked AI to make the interaction more visible and the type larger.
-I checked the result several times and said when it was still too small or not
-smooth enough.
+AI helped me turn the idea into variables and rules, but I made the final
+design decisions. I tested every version in the browser and explained what was
+not working.
 
-Later, I shared a visual reference. AI copied the reference's circular layout,
-but that changed my idea. I explained that I only wanted the type style, size
-contrast, and black-and-white feeling. I did not want a circle in the center.
-This correction was important because the artwork is about attention following
-the mouse, not about a fixed shape.
+One of my first comments was: **"The overall effect should be more obvious. The
+numbers are too small, and the motion is not smooth enough."** We made the type
+larger and improved the movement several times.
 
-I then asked for the information at the exact mouse position to become the
-clearest. AI added a rule that selects the closest character. I tested it in the
-browser and noticed that other large letters could cover it. The final version
-draws the main character last, turns it upright, and makes nearby secondary
-information slightly darker.
+Later, I shared a black-and-white typography image as a style reference. AI
+copied its circle shape, but I did not want a fixed circle. I said: **"There
+should not be a circle in the center. The information should gather around the
+mouse. I only wanted the style."** We removed the fixed center and changed the
+focus range so the edge did not look like a ring.
 
-This process showed me that AI can make code quickly, but it cannot decide if a
-visual result communicates my idea. I had to compare each version with the
-concept, find the problems, and ask for specific changes.
+I also asked: **"The character at the mouse should grow automatically and
+become the clearest information."** The code then selected the closest
+character. During testing, I found that other letters could cover it, so the
+final version draws that character last and turns it upright.
 
-## Code
-
-- `index.html` creates the page and Canvas.
-- `style.css` sets the full-screen layout and small text labels.
-- `script.js` creates the marks, tracks attention, updates movement, and draws
-  every frame.
-- Canvas 2D draws the whole artwork.
-- The project uses plain HTML, CSS, and JavaScript with no outside libraries.
-
-The code keeps attention logic separate from drawing logic. This made it easier
-to test the 1.5-second focus, 2-second release, smooth handoff, and visual
-response as different parts.
+This process showed me that AI can produce code quickly, but it cannot decide
+if the artwork communicates my idea. I had to test the work, find problems,
+and give specific feedback. A failed result was still useful because it helped
+me explain what the project should not become.
 
 ## What I learned
 
-Computational thinking helped me turn a difficult idea into small rules. The
-most useful rule was not “make particles follow the mouse.” It was “make one
-area easier to read while other areas lose importance.” That rule kept the code
-connected to the phenomenon.
+Computational thinking helped me turn an invisible idea into small rules. The
+most useful rule was not "make particles follow the mouse." It was "make one
+area easier to read while other areas lose importance."
 
-The failed circle version also helped me understand the difference between
-copying a visual style and copying a composition. Testing the work in the
-browser helped me see problems that were not clear from code alone, such as
-small text, rough handoffs, overlap, and a focus area that looked like a ring.
+I also learned the difference between copying a visual style and copying a
+composition. The reference image helped with typography, rotation, size
+contrast, and the black-and-white mood. Its circle shape did not fit my idea.
 
-## How to run it
+Testing was important. The code alone did not show me that the letters were too
+small, the movement felt rough, the focus looked like a ring, or the main
+character could be hidden. Each visual problem became a smaller coding problem
+that I could change and test again.
+
+## Code and how to run it
+
+- `index.html` creates the page and Canvas.
+- `style.css` creates the full-screen black-and-white layout.
+- `script.js` creates the marks, reads the mouse, updates focus, and draws each
+  frame.
+- The project has no outside libraries.
 
 Open `index.html` in a modern browser, or run:
 
@@ -139,10 +121,6 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-## Known limits
-
-- The interaction is designed for a desktop mouse.
-- Touch and pen input are not included.
-- Font shapes can look a little different on different computers.
-- Reduced-motion settings stop the drifting and pulling motion, but keep the
-  clarity response.
+The main interaction is made for a desktop mouse. Touch and pen input are not
+included. Fonts may look a little different on different computers. A reduced
+motion setting stops the drifting and pulling motion but keeps the focus change.
