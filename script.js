@@ -16,22 +16,22 @@
       symbols: Object.freeze(["+", "·", "–"]),
     }),
     sizing: Object.freeze({
-      characterMin: 8.5,
-      characterMax: 13,
-      symbolMin: 8,
-      symbolMax: 12,
+      characterMin: 12,
+      characterMax: 18,
+      symbolMin: 10,
+      symbolMax: 16,
       dotDiameterMin: 1,
       dotDiameterMax: 2,
     }),
     composition: Object.freeze({
       edgeMargin: 22,
       placementAttempts: 18,
-      minimumSpacingMin: 10,
-      minimumSpacingMax: 24,
+      minimumSpacingMin: 14,
+      minimumSpacingMax: 30,
     }),
     appearance: Object.freeze({
-      opacityMin: 0.18,
-      opacityMax: 0.48,
+      opacityMin: 0.22,
+      opacityMax: 0.52,
     }),
     movement: Object.freeze({
       amplitudeMin: 2.5,
@@ -663,7 +663,7 @@
       (CONFIG.population.characters +
         CONFIG.population.dots +
         CONFIG.population.symbols);
-    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.3;
+    const proportionalSpacing = Math.sqrt(areaPerElement) * 0.36;
 
     return Math.min(
       CONFIG.composition.minimumSpacingMax,
