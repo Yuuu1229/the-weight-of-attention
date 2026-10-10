@@ -34,6 +34,11 @@ attention center, grow subtly, and move more calmly. Peripheral marks fade
 toward a protected minimum opacity. A bounded direct displacement preserves
 spacing and prevents collapse into the cursor.
 
+The nearest character becomes the primary information mark during a sustained
+focus. It grows smoothly toward a readable display size and reaches the highest
+contrast in the field. A small selection hysteresis keeps this primary mark
+stable until another character is meaningfully closer to the pointer.
+
 The response is deliberately staged. Searching first reveals nearby information
 without attraction or peripheral loss. During a stable dwell, local motion
 calms before soft convergence begins. Peripheral fading arrives later, making
@@ -69,6 +74,8 @@ focus releases and a new one forms.
 - Focus radius of approximately 260px
 - Per-element focus reach varies around the nominal radius to avoid a circular
   response boundary
+- The nearest character smoothly becomes the largest and clearest information
+  at the pointer, with hysteresis to prevent flickering handoffs
 - Maximum attraction ratio of `0.62`
 - Maximum convergence displacement of 44px
 - Minimum peripheral opacity of `0.10`

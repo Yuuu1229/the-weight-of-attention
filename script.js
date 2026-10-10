@@ -101,6 +101,14 @@
       transformSmoothingTime: 0.12,
       transformSettleEpsilon: 0.001,
       maximumFocusedScaleIncrease: 0.48,
+      focusHeroSelectionRadius: 150,
+      focusHeroSwitchHysteresis: 18,
+      focusHeroBuildStartStrength: 0.18,
+      focusHeroBuildEndStrength: 0.9,
+      focusHeroTargetSize: 72,
+      focusHeroMinimumScale: 1.55,
+      focusHeroMaximumScale: 5.2,
+      focusHeroOpacity: 1,
     }),
   });
 
@@ -123,6 +131,7 @@
     isDocumentVisible: !document.hidden,
     prefersReducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)"),
     attention: createAttentionState(),
+    focusHeroId: null,
     visualsSettling: false,
   };
 
@@ -845,6 +854,63 @@
     });
   }
 
+  function updateFocusHero() {
+    const effective = state.attention.effective;
+    const hasFocus =
+      effective.owner !== "none" &&
+      effective.x !== null &&
+      effective.y !== null &&
+      effective.strength > CONFIG.attention.strengthEpsilon;
+
+    if (!hasFocus) {
+      state.focusHeroId = null;
+      return;
+    }
+
+    let nearestElement = null;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    let currentElement = null;
+    let currentDistance = Number.POSITIVE_INFINITY;
+
+    for (const element of state.elements) {
+      if (element.type !== "character") {
+        continue;
+      }
+
+      const x = element.renderX ?? element.normalizedX * state.width;
+      const y = element.renderY ?? element.normalizedY * state.height;
+      const distance = Math.hypot(effective.x - x, effective.y - y);
+
+      if (element.id === state.focusHeroId) {
+        currentElement = element;
+        currentDistance = distance;
+      }
+
+      if (distance < nearestDistance) {
+        nearestElement = element;
+        nearestDistance = distance;
+      }
+    }
+
+    if (
+      !nearestElement ||
+      nearestDistance > CONFIG.response.focusHeroSelectionRadius
+    ) {
+      state.focusHeroId = null;
+      return;
+    }
+
+    const currentRemainsCompetitive =
+      currentElement !== null &&
+      currentDistance <= CONFIG.response.focusHeroSelectionRadius &&
+      currentDistance <=
+        nearestDistance + CONFIG.response.focusHeroSwitchHysteresis;
+
+    if (!currentRemainsCompetitive) {
+      state.focusHeroId = nearestElement.id;
+    }
+  }
+
   function getElementVisualState(element, elapsed) {
     const motionRatio = state.prefersReducedMotion.matches
       ? CONFIG.movement.reducedMotionRatio
@@ -931,6 +997,14 @@
       focusStrength,
       CONFIG.response.peripheralFadeStartStrength,
     );
+    const focusHeroStrength =
+      element.id === state.focusHeroId
+        ? getStagedResponse(
+            focusStrength,
+            CONFIG.response.focusHeroBuildStartStrength,
+            CONFIG.response.focusHeroBuildEndStrength,
+          )
+        : 0;
     const initialDistance = Math.hypot(
       effective.x - uncalmedX,
       effective.y - uncalmedY,
@@ -985,25 +1059,38 @@
         (1 - localInfluence);
     const visualX = ambientX + focusDeltaX * spatialRatio;
     const visualY = ambientY + focusDeltaY * spatialRatio;
+    const responseOpacity = clamp(
+      clarifiedOpacity * peripheralFactor,
+      CONFIG.response.minimumPeripheralOpacity,
+      CONFIG.response.focusedOpacity,
+    );
+    const localScale =
+      1 +
+      CONFIG.response.maximumFocusedScaleIncrease *
+        element.focusScale *
+        localInfluence *
+        clarityStrength;
+    const focusHeroTargetScale = clamp(
+      CONFIG.response.focusHeroTargetSize / element.size,
+      CONFIG.response.focusHeroMinimumScale,
+      CONFIG.response.focusHeroMaximumScale,
+    );
+    const visualScale =
+      localScale +
+      (Math.max(localScale, focusHeroTargetScale) - localScale) *
+        focusHeroStrength;
 
     return {
       x: clamp(visualX, boundary, state.width - boundary),
       y: clamp(visualY, boundary, state.height - boundary),
-      opacity: clamp(
-        clarifiedOpacity * peripheralFactor,
-        CONFIG.response.minimumPeripheralOpacity,
-        CONFIG.response.focusedOpacity,
-      ),
-      scale: state.prefersReducedMotion.matches
-        ? 1
-        : 1 +
-          CONFIG.response.maximumFocusedScaleIncrease *
-            element.focusScale *
-            localInfluence *
-            clarityStrength,
+      opacity:
+        responseOpacity +
+        (CONFIG.response.focusHeroOpacity - responseOpacity) *
+          focusHeroStrength,
+      scale: visualScale,
       rotation: state.prefersReducedMotion.matches
         ? element.rotation
-        : ambientRotation,
+        : ambientRotation * (1 - focusHeroStrength),
     };
   }
 
@@ -1025,12 +1112,30 @@
     context.fill();
   }
 
+  function drawElement(element) {
+    context.globalAlpha = element.renderOpacity;
+
+    if (element.type === "dot") {
+      drawDot(element, element.renderX, element.renderY, element.renderScale);
+    } else {
+      drawTextElement(
+        element,
+        element.renderX,
+        element.renderY,
+        element.renderScale,
+        element.renderRotation,
+      );
+    }
+  }
+
   function render(delta = 0) {
     context.globalAlpha = 1;
     context.fillStyle = CONFIG.colors.background;
     context.fillRect(0, 0, state.width, state.height);
     context.fillStyle = CONFIG.colors.mark;
     state.visualsSettling = false;
+    updateFocusHero();
+    let focusHeroElement = null;
 
     const positionResponse =
       delta > 0
@@ -1089,19 +1194,15 @@
         state.visualsSettling = true;
       }
 
-      context.globalAlpha = element.renderOpacity;
-
-      if (element.type === "dot") {
-        drawDot(element, element.renderX, element.renderY, element.renderScale);
+      if (element.id === state.focusHeroId) {
+        focusHeroElement = element;
       } else {
-        drawTextElement(
-          element,
-          element.renderX,
-          element.renderY,
-          element.renderScale,
-          element.renderRotation,
-        );
+        drawElement(element);
       }
+    }
+
+    if (focusHeroElement) {
+      drawElement(focusHeroElement);
     }
 
     context.globalAlpha = 1;
