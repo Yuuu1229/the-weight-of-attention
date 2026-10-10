@@ -51,6 +51,7 @@ focus releases and a new one forms.
 ## Visual response
 
 - Approximately 240 persistent elements: 60% characters, 30% dots, 10% symbols
+- Character sizes of approximately 7–11px; dots remain 1–2px
 - Background `#08090B` and marks `#E8E8E3`
 - Slow unsynchronized ambient movement
 - Focus radius of approximately 200px
