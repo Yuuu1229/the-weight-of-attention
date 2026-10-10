@@ -80,13 +80,16 @@
       minimumSampleInterval: 0.001,
     }),
     response: Object.freeze({
-      maximumAttractionRatio: 0.45,
-      maximumConvergenceDisplacement: 36,
+      maximumAttractionRatio: 0.62,
+      maximumConvergenceDisplacement: 44,
       focusedOpacity: 0.98,
       peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
       focusedMotionReduction: 0.9,
       clarityStrengthExponent: 0.55,
+      localInfluenceExponent: 1.65,
+      focusReachMin: 0.72,
+      focusReachMax: 1.12,
       calmStartStrength: 0.15,
       calmCompletionStrength: 0.7,
       convergenceStartStrength: 0.18,
@@ -802,6 +805,10 @@
       renderRotation: null,
       rotation: randomBetween(-0.58, 0.58),
       focusScale: randomBetween(0.45, 1),
+      focusReach: randomBetween(
+        CONFIG.response.focusReachMin,
+        CONFIG.response.focusReachMax,
+      ),
       amplitudeX: randomBetween(
         CONFIG.movement.amplitudeMin,
         CONFIG.movement.amplitudeMax,
@@ -929,11 +936,15 @@
       effective.y - uncalmedY,
     );
     const radiusProgress = clamp(
-      initialDistance / CONFIG.attention.focusRadius,
+      initialDistance /
+        (CONFIG.attention.focusRadius * element.focusReach),
       0,
       1,
     );
-    const localInfluence = 1 - smoothStep(radiusProgress);
+    const localInfluence = Math.pow(
+      1 - smoothStep(radiusProgress),
+      CONFIG.response.localInfluenceExponent,
+    );
     const calmAmount =
       CONFIG.response.focusedMotionReduction * localInfluence * calmStrength;
     const ambientX = clamp(

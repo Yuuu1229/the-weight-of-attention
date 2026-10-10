@@ -67,8 +67,10 @@ focus releases and a new one forms.
 - Background `#08090B` and marks `#E8E8E3`
 - Slow unsynchronized ambient movement
 - Focus radius of approximately 260px
-- Maximum attraction ratio of `0.45`
-- Maximum convergence displacement of 36px
+- Per-element focus reach varies around the nominal radius to avoid a circular
+  response boundary
+- Maximum attraction ratio of `0.62`
+- Maximum convergence displacement of 44px
 - Minimum peripheral opacity of `0.10`
 - No rings, spirals, fixed center, glow, trails, sound, or cursor decoration
 
