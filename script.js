@@ -289,7 +289,7 @@
       strength: clamp(candidate.strength, 0, 1),
     };
 
-    // Never replace a release that still owns the public effective focus.
+    // Keep the old focus until it no longer controls the visible result.
     if (!release.active || effective.owner === "candidate") {
       attention.release = capturedRelease;
     }
@@ -428,7 +428,7 @@
 
     pointer.velocityX += (targetVelocityX - pointer.velocityX) * response;
     pointer.velocityY += (targetVelocityY - pointer.velocityY) * response;
-    // Smooth magnitude separately so fast direction changes cannot cancel out.
+    // Smooth speed by itself so quick direction changes do not hide movement.
     const smoothedSpeed = pointer.speed + (targetSpeed - pointer.speed) * response;
     pointer.speed = pointer.hasPendingVelocity
       ? Math.max(targetSpeed, smoothedSpeed)
@@ -714,7 +714,7 @@
     let bestCandidate = null;
     let bestDistance = -1;
 
-    // A small best-candidate pass prevents collisions without producing a grid.
+    // Try several random spots and use one with enough room.
     for (
       let attempt = 0;
       attempt < CONFIG.composition.placementAttempts;
@@ -848,7 +848,7 @@
 
     state.elements = [];
 
-    // Identity and content are assigned once and remain stable for the session.
+    // Give each mark its content once, so it never changes later.
     types.forEach((type, index) => {
       state.elements.push(createElement(type, index, state.elements));
     });
@@ -915,7 +915,7 @@
     const motionRatio = state.prefersReducedMotion.matches
       ? CONFIG.movement.reducedMotionRatio
       : 1;
-    // Two very slow oscillations avoid a mechanical circular drift.
+    // Use two slow waves so the drift does not look like a circle.
     const primaryX = Math.sin(
       elapsed * element.frequencyX + element.phaseX,
     );
@@ -1327,7 +1327,7 @@
       resizeAttention(oldWidth, oldHeight, width, height);
     }
 
-    // Normalized base positions preserve composition and identity across resizes.
+    // Save positions as percentages so resizing keeps the same layout.
     state.width = width;
     state.height = height;
     state.pixelRatio = pixelRatio;
