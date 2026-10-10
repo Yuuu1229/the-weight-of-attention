@@ -34,6 +34,12 @@ attention center, and move more calmly. Peripheral marks fade toward a protected
 minimum opacity. A bounded displacement and maximum attraction ratio preserve
 spacing and prevent collapse into the cursor.
 
+The response is deliberately staged. Searching first reveals nearby information
+without attraction or peripheral loss. During a stable dwell, local motion
+calms before soft convergence begins. Peripheral fading arrives later, making
+the cost of sustained attention legible. On release, the periphery returns
+before the final trace of local clarity dissolves.
+
 ## Interaction states
 
 - **Ambient:** The field drifts slowly without an active attention center.

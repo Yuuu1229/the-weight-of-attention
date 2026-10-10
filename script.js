@@ -72,7 +72,11 @@
       peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
       focusedMotionReduction: 0.9,
-      visualStrengthExponent: 0.78,
+      clarityStrengthExponent: 0.55,
+      calmStartStrength: 0.15,
+      calmCompletionStrength: 0.7,
+      convergenceStartStrength: 0.18,
+      peripheralFadeStartStrength: 0.4,
     }),
   });
 
@@ -180,6 +184,16 @@
   function smoothStep(progress) {
     const boundedProgress = clamp(progress, 0, 1);
     return boundedProgress * boundedProgress * (3 - 2 * boundedProgress);
+  }
+
+  function getStagedResponse(strength, startStrength, endStrength = 1) {
+    if (strength <= startStrength) {
+      return 0;
+    }
+
+    return smoothStep(
+      (strength - startStrength) / (endStrength - startStrength),
+    );
   }
 
   function startCandidate(attention, x, y) {
@@ -831,9 +845,23 @@
       return { x: uncalmedX, y: uncalmedY, opacity: element.opacity };
     }
 
-    const focusStrength = Math.pow(
-      clamp(effective.strength, 0, 1),
-      CONFIG.response.visualStrengthExponent,
+    const focusStrength = clamp(effective.strength, 0, 1);
+    const clarityStrength = Math.pow(
+      focusStrength,
+      CONFIG.response.clarityStrengthExponent,
+    );
+    const calmStrength = getStagedResponse(
+      focusStrength,
+      CONFIG.response.calmStartStrength,
+      CONFIG.response.calmCompletionStrength,
+    );
+    const convergenceStrength = getStagedResponse(
+      focusStrength,
+      CONFIG.response.convergenceStartStrength,
+    );
+    const peripheralStrength = getStagedResponse(
+      focusStrength,
+      CONFIG.response.peripheralFadeStartStrength,
     );
     const initialDistance = Math.hypot(
       effective.x - uncalmedX,
@@ -846,7 +874,7 @@
     );
     const localInfluence = 1 - smoothStep(radiusProgress);
     const calmAmount =
-      CONFIG.response.focusedMotionReduction * localInfluence * focusStrength;
+      CONFIG.response.focusedMotionReduction * localInfluence * calmStrength;
     const ambientX = clamp(
       baseX + rawOffsetX * (1 - calmAmount),
       boundary,
@@ -863,9 +891,9 @@
     const requestedRatio =
       CONFIG.response.maximumAttractionRatio *
       localInfluence *
-      focusStrength;
+      convergenceStrength;
     const displacementLimit =
-      CONFIG.response.maximumConvergenceDisplacement * focusStrength;
+      CONFIG.response.maximumConvergenceDisplacement * convergenceStrength;
     const displacementRatio =
       focusDistance > 0
         ? Math.min(requestedRatio, displacementLimit / focusDistance)
@@ -877,11 +905,11 @@
       element.opacity +
       (CONFIG.response.focusedOpacity - element.opacity) *
         localInfluence *
-        focusStrength;
+        clarityStrength;
     const peripheralFactor =
       1 -
       CONFIG.response.peripheralFadeAmount *
-        focusStrength *
+        peripheralStrength *
         (1 - localInfluence);
 
     return {
