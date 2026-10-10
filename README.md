@@ -113,13 +113,22 @@ that I could change and test again.
   frame.
 - The project has no outside libraries.
 
-Open `index.html` in a modern browser, or run:
+The easiest way to view the finished project is to open the
+[live website](https://yuuu1229.github.io/the-weight-of-attention/).
+
+To run it on this computer, open Terminal and enter these two commands:
 
 ```sh
+cd ~/Desktop/5003/the-weight-of-attention
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Then open [http://localhost:8000](http://localhost:8000) in a browser. The
+`cd` command is important. It makes the server use the project folder instead
+of showing a list of files from another folder.
+
+On another computer, replace the path after `cd` with the location of the
+downloaded project folder.
 
 The main interaction is made for a desktop mouse. Touch and pen input are not
 included. Fonts may look a little different on different computers. A reduced
