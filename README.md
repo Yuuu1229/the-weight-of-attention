@@ -53,9 +53,9 @@ focus releases and a new one forms.
 - Approximately 240 persistent elements: 60% characters, 30% dots, 10% symbols
 - Background `#08090B` and marks `#E8E8E3`
 - Slow unsynchronized ambient movement
-- Focus radius of approximately 180px
+- Focus radius of approximately 200px
 - Maximum attraction ratio of `0.45`
-- Maximum convergence displacement of 24px
+- Maximum convergence displacement of 28px
 - Minimum peripheral opacity of `0.10`
 - No rings, spirals, glow, trails, sound, or cursor decoration
 

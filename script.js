@@ -55,7 +55,7 @@
       stableSpeedThreshold: 12,
       fastSpeedThreshold: 80,
       dwellTolerance: 20,
-      focusRadius: 180,
+      focusRadius: 200,
       maximumEffectiveFocusCount: 1,
       velocityResponseTime: 0.12,
       maximumAttentionFrameGap: 0.25,
@@ -66,11 +66,12 @@
     }),
     response: Object.freeze({
       maximumAttractionRatio: 0.45,
-      maximumConvergenceDisplacement: 24,
-      focusedOpacity: 0.82,
-      peripheralFadeAmount: 0.56,
+      maximumConvergenceDisplacement: 28,
+      focusedOpacity: 0.94,
+      peripheralFadeAmount: 0.72,
       minimumPeripheralOpacity: 0.1,
-      focusedMotionReduction: 0.78,
+      focusedMotionReduction: 0.9,
+      visualStrengthExponent: 0.78,
     }),
   });
 
@@ -825,7 +826,10 @@
       return { x: uncalmedX, y: uncalmedY, opacity: element.opacity };
     }
 
-    const focusStrength = clamp(effective.strength, 0, 1);
+    const focusStrength = Math.pow(
+      clamp(effective.strength, 0, 1),
+      CONFIG.response.visualStrengthExponent,
+    );
     const initialDistance = Math.hypot(
       effective.x - uncalmedX,
       effective.y - uncalmedY,
